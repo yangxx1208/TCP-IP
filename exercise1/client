@@ -1,0 +1,77 @@
+#include<Winsock2.h>
+#include<stdio.h>
+#include<iostream>
+#pragma comment(lib,"ws2_32.lib") 
+#define DEFAULT_PORT 5051
+#define DATA_BUFFER 1024
+using namespace std;
+void main()
+{
+	WSADATA wsaData;
+	SOCKET sClient;
+	int iPort = DEFAULT_PORT;
+	int iLen;
+	int iSend;
+	int iRecv;
+	char ip[20];
+	char send_buf[] = "Hello! ";
+	char recv_buf[DATA_BUFFER];
+	struct sockaddr_in ser;
+
+	memset(recv_buf, 0, sizeof(recv_buf));
+	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+	{
+		printf("Failed to load Winsock.\n");
+		return;
+	}
+	ser.sin_family = AF_INET;
+	
+	cout << "服务器ip地址：" << endl;
+	cin >> ip;
+	cout << "服务器iport：" << endl;
+	cin >> iPort;
+	ser.sin_port = htons(iPort);
+	ser.sin_addr.s_addr = inet_addr(ip);
+	sClient = socket(AF_INET, SOCK_DGRAM, 0);
+	if (sClient == INVALID_SOCKET)
+	{
+		printf("socket()Failed:%d\n", WSAGetLastError());
+		return;
+	}
+	iLen = sizeof(ser);
+	cout << "客户端：";
+	cin >> send_buf;
+	while (strcmp(send_buf,"close")){
+		iSend = sendto(sClient, send_buf, sizeof(send_buf), 0, (struct sockaddr*)&ser, iLen);
+		if (iSend == SOCKET_ERROR)
+		{
+			printf("sendto()Failed:%d\n", WSAGetLastError());
+			return;
+		}
+		else if (iSend == 0)
+		{
+			return;
+		}
+		else
+			printf("                 ---------sendto()succeeded.\n");
+
+		iRecv = recvfrom(sClient, recv_buf, sizeof(recv_buf), 0, (struct sockaddr*)&ser, &iLen);
+		if (iRecv == SOCKET_ERROR)
+		{
+			printf("recvfrom()Failed:%d\n", WSAGetLastError());
+			return;
+		}
+		else if (iSend == 0)
+		{
+			return;
+		}
+		else
+		{
+			printf("服务端:%s.\n", recv_buf);
+			printf("                 ---------recvfrom()succeeded.\n");
+		}
+		cin >> send_buf;
+	}
+	closesocket(sClient);
+	WSACleanup();
+}
