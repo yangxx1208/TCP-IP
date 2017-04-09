@@ -1,1 +1,94 @@
+#include<Winsock2.h>
+#include<stdio.h>
+#include<iostream>
+#pragma comment(lib,"ws2_32.lib")
+#define DEFAULT_PORT 5051
+#define DATA_BUFFER 1024
+using namespace std;
+int main()
+{
+//	freopen("C:\\Users\\Dell\\Desktop\\in.txt", "r", stdin);
+//	freopen("slyar.out", "w", stdout);
+	FILE *fp = fopen("C:\\Users\\Dell\\Desktop\\in.txt", "r");
+	if (!fp){
+		printf("无法打开文件！\n");
+		return -1;
+	}
+	
+	WSADATA wsaData;
+	SOCKET sClient;
+	int iPort = DEFAULT_PORT;
+	int iLen;
+	int iLen2;
+	int iSend;
+	int iRecv;
+	char ip[20];
+	char ip2[20];
+	char send_buf[30];
+	char send_per[30]="随便";
+	char send_per_fu[30];
+	char recv_buf[DATA_BUFFER];
+	struct sockaddr_in ser;
+	struct sockaddr_in ser2;
+	memset(recv_buf, 0, sizeof(recv_buf));
+	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+	{
+		printf("Failed to load Winsock.\n");
+		return 0;
+	}
+	ser.sin_family = AF_INET;
+	ser2.sin_family = AF_INET;
+	cout << "服务器ip地址：" << endl;
+	fscanf(fp, "%s", &ip);
+	cout << ip << endl;
+	//cout << "客户端ip地址：" << endl;
+	//fscanf(fp, "%s", &ip2);
+	//cout << ip2 << endl;
+	cout << "本机用户：" << endl;
+	fscanf(fp, "%s", &send_per);
+	cout << send_per << endl;
+	strcpy(send_per, strcat(send_per, ":"));
+
+
+
+	ser.sin_port = htons(iPort);
+	ser2.sin_port = htons(iPort);
+	ser.sin_addr.s_addr = inet_addr(ip);
+	ser2.sin_addr.s_addr = inet_addr(ip2);
+	sClient = socket(AF_INET, SOCK_DGRAM, 0);
+	if (sClient == INVALID_SOCKET)
+	{
+		printf("socket()Failed:%d\n", WSAGetLastError());
+		return 0;
+	}
+	iLen = sizeof(ser);
+	iLen2 = sizeof(ser2);
+	cin >> send_buf;
+	while (strcmp(send_buf, "close")){
+		strcpy(send_per_fu, send_per);
+		strcpy(send_buf, strcat(send_per_fu, send_buf));
+		iSend = sendto(sClient, send_buf, sizeof(send_buf), 0, (struct sockaddr*)&ser, iLen);//发送给对方服务器
+	//	iSend = sendto(sClient, send_buf, sizeof(send_buf), 0, (struct sockaddr*)&ser2, iLen2);//发送给自己服务器
+		if (iSend == SOCKET_ERROR)
+		{
+			printf("sendto()Failed:%d\n", WSAGetLastError());
+			return 0;
+		}
+		else if (iSend == 0)
+		{
+			return 0;
+		}
+		else
+		//	printf("succesd!");
+			cin >> send_buf;
+	}
+	
+	iSend = sendto(sClient, send_buf, sizeof(send_buf), 0, (struct sockaddr*)&ser, iLen);
+	closesocket(sClient);
+	WSACleanup();
+
+
+	
+	//fclose(stdout);
+}
 
