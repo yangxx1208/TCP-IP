@@ -68,7 +68,7 @@ int main()
 		strcpy(send_per_fu, send_per);
 		strcpy(send_buf, strcat(send_per_fu, send_buf));
 		iSend = sendto(sClient, send_buf, sizeof(send_buf), 0, (struct sockaddr*)&ser, iLen);//发送给对方服务器
-	//	iSend = sendto(sClient, send_buf, sizeof(send_buf), 0, (struct sockaddr*)&ser2, iLen2);//发送给自己服务器
+		iSend = sendto(sClient, send_buf, sizeof(send_buf), 0, (struct sockaddr*)&ser2, iLen2);//发送给自己服务器
 		if (iSend == SOCKET_ERROR)
 		{
 			printf("sendto()Failed:%d\n", WSAGetLastError());
