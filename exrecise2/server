@@ -1,0 +1,76 @@
+#include<Winsock2.h>
+#include<iostream>
+#include<stdio.h>
+#include<stdlib.h>
+#define DEFAULT_PORT 5051
+#define BUFFER_LENGTH 1024
+#pragma comment(lib,"ws2_32.lib")
+using namespace std;
+int main()
+{
+	int iPort = DEFAULT_PORT;
+	WSADATA wsaData;
+	SOCKET sSocket;
+	int iLen;
+	int iSend;
+	int iRecv;
+	char send_buf[] = "杨学斌.";
+	char recv_buf[BUFFER_LENGTH];
+
+	struct sockaddr_in ser,
+		cli;
+	printf("-------------------\n");
+	printf("Sever waiting\n");
+	printf("-------------------\n");
+	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+	{
+		printf("Failed to load winsock.\n");
+		return 0;
+	}
+	sSocket = socket(AF_INET, SOCK_DGRAM, 0);
+	if (sSocket == INVALID_SOCKET)
+	{
+		printf("socket() Failed:%d\n", WSAGetLastError());
+		return 0;
+	}
+	ser.sin_family = AF_INET;
+	ser.sin_port = htons(iPort);
+	ser.sin_addr.s_addr = htonl(INADDR_ANY);
+	if (bind(sSocket, (LPSOCKADDR)&ser, sizeof(ser)) == SOCKET_ERROR)
+	{
+		printf("bind()Failed:%d\n", WSAGetLastError());
+		return 0;
+	}
+	iLen = sizeof(cli);
+	memset(recv_buf, 0, sizeof(recv_buf));
+
+	while (1)
+	{
+		iRecv = recvfrom(sSocket, recv_buf, BUFFER_LENGTH, 0,
+			(SOCKADDR*)&cli, &iLen);
+		if (iRecv == SOCKET_ERROR)
+		{
+			printf("recvfrom()failed.:%d\n", WSAGetLastError());
+			break;
+		}
+		else if (iRecv == 0)
+			break;
+		else
+		{
+			if (strcmp(recv_buf, "close") == 0){
+				printf("对方已下线！\n");
+				break;
+			};
+			printf("%s\n", recv_buf);
+
+		}
+
+
+	}
+	closesocket(sSocket);
+	WSACleanup();
+}
+
+
+
+
